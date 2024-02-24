@@ -11,23 +11,30 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
     env_file: .env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   backend:
-    build: ./backend/
+    image: x9ilx/kittygram_backend
     env_file: .env
     volumes:
       - media:/app/media/
       - static:/static/
+    depends_on:
+      - db
 
   frontend:
+    image: x9ilx/kittygram_frontend
     env_file: .env
-    build: ./frontend/
     command: cp -r /app/build/. /static/
     volumes:
       - static:/static/
 
   gateway:
-    build: ./nginx/
+    image: x9ilx/kittygram_gateway
     env_file: .env
     ports:
       - 9000:80
